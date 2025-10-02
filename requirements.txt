@@ -8,4 +8,5 @@ matplotlib
 seaborn
 mlflow
 streamlit-webrtc
+huggingface-hub
 Pillow
