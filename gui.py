@@ -46,7 +46,7 @@ def get_model_transform():
 # --- Model Loading (with Caching) ---
 @st.cache_resource
 def load_emotion_classifier():
-    """DOWNLOADS AND LOADS THE ENTIRE PYTORCH MODEL OBJECT."""
+    """Downloads model weights and loads the entire PyTorch model object."""
     try:
         # 1. Download the model file from Hugging Face
         model_local_path = hf_hub_download(
@@ -55,17 +55,19 @@ def load_emotion_classifier():
         )
         st.info(f"✅ Model weights downloaded to: {model_local_path}")
         
-        # 2. LOAD THE ENTIRE MODEL OBJECT DIRECTLY
-        # The model architecture is reconstructed automatically from the saved file.
-        # This replaces the need for: classifier = models.resnet50(...)
-        classifier = torch.load(model_local_path, map_location=DEVICE)
+        # 2. LOAD THE ENTIRE MODEL OBJECT DIRECTLY AND SAFELY
+        # Set weights_only=False to allow loading of the full model object (trusted source).
+        classifier = torch.load(
+            model_local_path, 
+            map_location=DEVICE,
+            weights_only=False  # <--- THIS IS THE CRITICAL FIX
+        )
         classifier.eval() # Set the model to evaluation mode
         
         st.success("✅ PyTorch ResNet-50 classifier loaded and ready!")
         return classifier
         
     except Exception as e:
-        # Display the error but hide the complex class name for a cleaner message
         st.error(f"❌ An error occurred while loading the model: {e}")
         st.error("Please verify the repository ID and file path.")
         return None
@@ -260,4 +262,5 @@ with tab2:
             ctx.video_processor.frame_buffer = []
             
         else:
+
             st.warning("Please wait for the camera to start (click START) or record a segment before analyzing.")
